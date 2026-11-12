@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#120505">
-<title>AIRPOCALYPSE 3D — Combate Aéreo, Mini Bosses, Brainrot & Roblox</title>
+<title>AIRPOCALYPSE 3D — Combate Aéreo, Mini Bosses, Sistema de Vida & Buffs</title>
 <style>
   :root { color-scheme: dark; --ink:#ffeaea; --muted:#e0a3a3; --glass:rgba(30,8,8,.78); --line:rgba(255,90,90,.35); }
   * { box-sizing:border-box; user-select:none; -webkit-user-select:none; }
@@ -26,11 +26,14 @@
   .icon-btn { width:38px;height:38px;border:1px solid var(--line);border-radius:13px;background:rgba(30,10,10,.78);color:white;font-size:16px;cursor:pointer;backdrop-filter:blur(12px);pointer-events:auto; transition:.15s; }
   .icon-btn:hover,.btn:hover { filter:brightness(1.2);transform:translateY(-1px); }
 
-  /* INDICADOR DE HORDA DE MINI BOSSES */
+  /* INDICADOR DE HORDA & BUFF ATIVO */
   .horde-badge { position:absolute; z-index:3; top:68px; right:18px; padding:6px 12px; border-radius:12px; border:1px solid rgba(251,146,60,.55); background:rgba(35,12,6,.84); backdrop-filter:blur(10px); font-size:10px; font-weight:900; letter-spacing:.06em; color:#fed7aa; display:flex; align-items:center; gap:7px; pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,.45); transition:opacity .25s, transform .25s; }
   .horde-badge.hidden { opacity:0; transform:translateY(-8px); }
   .horde-dot { width:8px; height:8px; border-radius:99px; background:#f97316; box-shadow:0 0 10px #f97316; animation:pulseDot 1s infinite alternate; }
   @keyframes pulseDot { from { transform:scale(0.8); opacity:.6; } to { transform:scale(1.25); opacity:1; } }
+
+  .buff-badge { position:absolute; z-index:3; top:112px; right:18px; padding:6px 12px; border-radius:12px; border:1px solid rgba(56,189,248,.65); background:rgba(8,28,48,.88); backdrop-filter:blur(10px); font-size:10px; font-weight:900; letter-spacing:.06em; color:#e0f2fe; display:flex; align-items:center; gap:7px; pointer-events:none; box-shadow:0 4px 18px rgba(0,180,255,.35); transition:opacity .25s; }
+  .buff-badge.hidden { opacity:0; pointer-events:none; }
 
   /* OVERLAYS & PANELS */
   .overlay { position:absolute;z-index:4;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(180deg,rgba(25,5,5,.48),rgba(10,2,2,.85)); pointer-events:auto; }
@@ -129,6 +132,7 @@
     .topbar{top:max(10px,env(safe-area-inset-top));left:10px;right:10px}.brand-mark{width:30px;height:30px}.brand-name{font-size:14px}.brand-sub{font-size:7.5px}
     .hud{gap:4px}.pill{min-width:52px;padding:5px 7px;border-radius:10px}.pill-label{font-size:7px}.pill-value{font-size:13px}.icon-btn{width:32px;height:32px;border-radius:10px}
     .horde-badge{top:54px;right:10px;font-size:8.5px;padding:4px 8px}
+    .buff-badge{top:94px;right:10px;font-size:8.5px;padding:4px 8px}
     .panel{padding:15px 12px 13px}.footer-note{display:none}
     .combat-bar{bottom:max(10px,env(safe-area-inset-bottom));left:10px;right:10px}
     .skill-hud,.fire-hud{padding:5px 8px;gap:7px}
@@ -140,7 +144,7 @@
 </head>
 <body>
 <main class="shell" aria-label="Jogo Airpocalypse 3D Combate">
-  <canvas id="game" width="960" height="540" aria-label="Área do jogo 3D com tiros de orbes de energia, mini bosses em hordas, chefes permanentes e mapas dinâmicos"></canvas>
+  <canvas id="game" width="960" height="540" aria-label="Área do jogo 3D com sistema de vida, buffs especiais aleatórios e tiros automáticos"></canvas>
   
   <div class="topbar">
     <div class="brand">
@@ -151,6 +155,7 @@
       </div>
     </div>
     <div class="hud" style="pointer-events: auto;">
+      <div class="pill"><span class="pill-label">Vida</span><span class="pill-value" id="hpVal" style="color:#ef4444;">❤️ 100</span></div>
       <div class="pill"><span class="pill-label">Pontos</span><span class="pill-value" id="score">0</span></div>
       <div class="pill"><span class="pill-label">Moedas</span><span class="pill-value" id="coins">🪙 0</span></div>
       <button class="icon-btn" id="achHudBtn" aria-label="Conquistas" title="Conquistas & Recompensas">🏆</button>
@@ -158,16 +163,20 @@
     </div>
   </div>
 
-  <!-- BADGE DE HORDA DE MINI BOSSES -->
+  <!-- BADGE DE HORDA & BUFF ATIVO -->
   <div class="horde-badge hidden" id="hordeBadge">
     <span class="horde-dot"></span>
     <span id="hordeText">ESQUADRÃO MINI BOSS LV.1 · 4 ALVOS</span>
+  </div>
+  <div class="buff-badge hidden" id="buffBadge">
+    <span>⚡</span>
+    <span id="buffText">BUFF ATIVO: RAPIDEZ (5.0s)</span>
   </div>
 
   <!-- BARRA DE COMBATE INFERIOR -->
   <div class="combat-bar">
     <div class="combat-controls">
-      <div class="skill-hud" id="skillHud" title="Tecla E: Poder Especial em Área">
+      <div class="skill-hud" id="skillHud" title="Tecla E: Poder Especial em Área / Auto Tiro Especial">
         <div class="skill-icon" id="skillIcon">
           💥
           <div class="skill-cd-overlay hidden" id="cdOverlay">5s</div>
@@ -207,17 +216,17 @@
   <!-- MENU INICIAL -->
   <section class="overlay" id="startScreen">
     <div class="panel">
-      <div class="eyebrow">⚠ Combate Aéreo 3D · Hordas Mini Boss, Brainrot & Roblox ⚠</div>
+      <div class="eyebrow">⚠ Combate Aéreo 3D · Sistema de Vida, Buffs & Nerfs 27% ⚠</div>
       <h1>AIRPOCALYPSE 3D</h1>
-      <div class="subtitle">MINI BOSSES ESCALÁVEIS · CHEFES ROBLOX/BRAINROT · CONQUISTAS</div>
-      <div class="active-char-pill" id="menuCharBadge">🧱 Equipado: Foguete Noob Roblox 3D (Dano: 10 | 1 Tiro)</div>
-      <p class="story">Enfrente esquadrões de <b>4 a 5 Mini Bosses</b> que surgem a cada <b>1,8s</b> e ficam mais fortes com o tempo, além dos <b>Chefes Gigantes 3D</b>! Atire <b>Orbes (F)</b> e detone tudo com <b>[E]</b>.</p>
+      <div class="subtitle">VIDA ESCALÁVEL POR PERSONAGEM · BUFFS ALEATÓRIOS (5S) · NERFS 27%</div>
+      <div class="active-char-pill" id="menuCharBadge">🧱 Equipado: Foguete Noob Roblox 3D (Vida: 100 | Dano: 10)</div>
+      <p class="story">Colete recursos especiais pelo cenário para ativar <b>Buffs Aleatórios de 5 segundos</b> (Rapidez, Vida Extra, Imortalidade ou Especial Automática Infinita)! Os últimos 4 personagens receberam balanceamento de <b>-27% de dano (Nerf)</b>, e cada nave possui sua própria <b>Barra de Vida exclusiva</b>!</p>
       <div class="btn-group">
         <button class="btn" id="startBtn" type="button">Decolar & Combater</button>
         <button class="btn btn-sec" id="shopBtnStart" type="button">Hangar & Mapas</button>
         <button class="btn btn-sec" id="achBtnStart" type="button">🏆 Conquistas</button>
       </div>
-      <div class="hint">Espaço / Clique: Voar · F / Botão Direito: Atirar Orbes · E: Explosão · Progresso Salvo Automaticamente</div>
+      <div class="hint">Espaço / Clique: Voar · F / Botão Direito: Atirar Orbes · E: Explosão / Auto-Especial</div>
     </div>
   </section>
 
@@ -226,7 +235,7 @@
     <div class="panel">
       <div class="eyebrow">Impacto Crítico Fatal</div>
       <h1 style="font-size:36px;letter-spacing:.08em">FOGUETE ABATIDO</h1>
-      <div class="subtitle">O cataclismo consumiu sua propulsão.</div>
+      <div class="subtitle">Sua vida chegou a zero e o cataclismo consumiu sua propulsão.</div>
       <div class="stats">
         <div class="stat"><strong id="finalScore">0</strong><span>Pontos</span></div>
         <div class="stat"><strong id="finalGems">0</strong><span>Moedas</span></div>
@@ -281,19 +290,26 @@
   const $ = id => document.getElementById(id);
   
   const startScreen = $('startScreen'), overScreen = $('overScreen'), pauseScreen = $('pauseScreen'), shopScreen = $('shopScreen');
-  const scoreEl = $('score'), coinsEl = $('coins'), shopCoinsEl = $('shopCoins'), shopAchCountEl = $('shopAchCount'), hudMapSub = $('hudMapSub'), menuCharBadge = $('menuCharBadge');
+  const scoreEl = $('score'), coinsEl = $('coins'), hpValEl = $('hpVal'), shopCoinsEl = $('shopCoins'), shopAchCountEl = $('shopAchCount'), hudMapSub = $('hudMapSub'), menuCharBadge = $('menuCharBadge');
   const skillHud = $('skillHud'), skillIcon = $('skillIcon'), cdOverlay = $('cdOverlay'), skillNameEl = $('skillName'), skillDescEl = $('skillDesc');
   const fireHud = $('fireHud'), fireNameEl = $('fireName'), fireDescEl = $('fireDesc'), autoFireBtn = $('autoFireBtn');
   const achBanner = $('achBanner'), achBannerIcon = $('achBannerIcon'), achBannerTitle = $('achBannerTitle'), achBannerReward = $('achBannerReward');
-  const hordeBadge = $('hordeBadge'), hordeText = $('hordeText');
+  const hordeBadge = $('hordeBadge'), hordeText = $('hordeText'), buffBadge = $('buffBadge'), buffText = $('buffText');
   
   const W = 960, H = 540;
-  const SAVE_KEY = 'airpocalypse_save_v4';
+  const SAVE_KEY = 'airpocalypse_save_v5';
 
   let state = 'menu', lastTime = 0, elapsed = 0, score = 0, coinsInRun = 0;
+  let playerHp = 100, playerMaxHp = 100;
+
+  // SISTEMA DE BUFFS ALEATÓRIOS DE 5 SEGUNDOS
+  let activeBuff = {
+    type: null, // 'speed', 'heal', 'immortal', 'infinite_special'
+    timer: 0
+  };
 
   let saveData = {
-    version: 4,
+    version: 5,
     totalCoins: 100,
     bestScore: 0,
     activeSkin: 'noob',
@@ -356,7 +372,7 @@
     toSpawn: 0,
     spawnedInWave: 0,
     spawnTimer: 0,
-    cooldownTimer: 4.5, // Primeira onda de Mini Bosses começa após 4.5s de voo
+    cooldownTimer: 4.5,
     waveNumber: 0,
     template: null,
     formation: 'sine'
@@ -364,10 +380,10 @@
 
   let bossProjectiles = [];
   let playerProjectiles = [];
+  let powerUpItems = []; // Recursos especiais que spawnam de forma aleatória
   let floatingTexts = [];
   let obstaclesPassedCount = 0;
 
-  // ROSTER COMPARTILHADO ENTRE BOSSES E MINI BOSSES
   const BOSS_ROSTER = [
     { id: 'roblox_noob', shortName: 'Noob Titã', name: 'Rei Noob Titã 3D (Roblox)', color: '#0284c7', secondary: '#facc15', eyeColor: '#ff0044', type: 'roblox_noob', pattern: 'aimed' },
     { id: 'skibidi_king', shortName: 'Skibidi', name: 'Imperador Skibidi 3D', color: '#e2e8f0', secondary: '#0284c7', eyeColor: '#00f7ff', type: 'skibidi_boss', pattern: 'spread' },
@@ -393,59 +409,64 @@
     { id: 'legend_slayer', icon: '🏆', title: 'Lenda Suprema 3D', desc: 'Derrote 8 Chefes Gigantes 3D.', reward: 250, getVal: s => s.bossesDefeated, target: 8 }
   ];
 
+  /* 
+    PERSONAGENS COM SISTEMA DE VIDA (MAIS CARO = MAIS VIDA) 
+    E OS 4 ÚLTIMOS PERSONAGENS (Shark, Sigma, Dominus, Phoenix) COM NERF DE 27% NO DANO.
+  */
   const SKINS = {
     noob: { 
-      name: 'Foguete Noob Roblox 3D', tag: 'ROBLOX', icon: '🧱', price: 0, buff: 1, 
+      name: 'Foguete Noob Roblox 3D', tag: 'ROBLOX', icon: '🧱', price: 0, buff: 1, maxHp: 100,
       skillName: 'Bloxy Blast', range: 230, cooldown: 5, skillDamage: 120,
       weaponName: 'Bloxy Orb', shotDamage: 10, shotCount: 1, shotSpread: 0, shotCooldown: 0.34, shotSpeed: 640, shotRadius: 8, rateLabel: 'Normal', sizeLabel: 'Médio',
       orbColors: ['#ffffff', '#38bdf8', '#0284c7'],
       flameColors: ['#ffffff', '#ffea00', '#ff6a00', '#d92600'],
-      desc: '1x Moedas | Equilibrado. Dispara esferas de energia Bloxy únicas contra mini bosses, chefes e obstáculos.',
+      desc: '1x Moedas | Vida: 100 | Equilibrado. Dispara esferas de energia Bloxy únicas.',
       type: 'noob' 
     },
     skibidi: { 
-      name: 'Skibidi Jet 3D', tag: 'BRAINROT', icon: '🚽', price: 25, buff: 2, 
+      name: 'Skibidi Jet 3D', tag: 'BRAINROT', icon: '🚽', price: 25, buff: 2, maxHp: 150,
       skillName: 'Flush Sônico', range: 300, cooldown: 4.5, skillDamage: 160,
       weaponName: 'Disparo Duplo Sônico', shotDamage: 12, shotCount: 2, shotSpread: 0.06, shotCooldown: 0.25, shotSpeed: 740, shotRadius: 8, rateLabel: 'Rápida', sizeLabel: 'Médio',
       orbColors: ['#ffffff', '#00f7ff', '#0066ff'],
       flameColors: ['#ffffff', '#00f7ff', '#0088ff', '#0033aa'],
-      desc: '2x Moedas | Dispara 2 orbes sônicos paralelos em alta cadência para limpar esquadrões.',
+      desc: '2x Moedas | Vida: 150 | Dispara 2 orbes sônicos paralelos.',
       type: 'skibidi' 
     },
+    // OS 4 ÚLTIMOS PERSONAGENS (NERFADOS EM 27% NO DANO):
     shark: { 
-      name: 'Tubarão Ceifador 3D', tag: 'ZOOX', icon: '🦈', price: 45, buff: 2, 
-      skillName: 'Mordida Supersonic', range: 330, cooldown: 4.2, skillDamage: 190,
-      weaponName: 'Torpedo Plasma Pesado', shotDamage: 32, shotCount: 1, shotSpread: 0, shotCooldown: 0.36, shotSpeed: 690, shotRadius: 15, rateLabel: 'Média', sizeLabel: 'Grande',
+      name: 'Tubarão Ceifador 3D', tag: 'ZOOX', icon: '🦈', price: 45, buff: 2, maxHp: 210,
+      skillName: 'Mordida Supersonic', range: 330, cooldown: 4.2, skillDamage: Math.round(190 * 0.73),
+      weaponName: 'Torpedo Plasma Pesado', shotDamage: Math.round(32 * 0.73), shotCount: 1, shotSpread: 0, shotCooldown: 0.36, shotSpeed: 690, shotRadius: 15, rateLabel: 'Média', sizeLabel: 'Grande',
       orbColors: ['#ffffff', '#34d399', '#059669'],
       flameColors: ['#ffffff', '#80ffea', '#00b4d8', '#0055aa'],
-      desc: '2x Moedas | Orbe gigante de alto impacto (32 de dano) que perfura defesas.',
+      desc: '2x Moedas | Vida: 210 | ⚠️ Nerf 27% Dano (Ajustado para equilibrio).',
       type: 'shark' 
     },
     sigma: { 
-      name: 'Sigma Gigachad 3D', tag: 'BRAINROT', icon: '🗿', price: 70, buff: 3, 
-      skillName: 'Mewing Shockwave', range: 390, cooldown: 3.8, skillDamage: 230,
-      weaponName: 'Rajada Leque Alfa', shotDamage: 15, shotCount: 3, shotSpread: 0.14, shotCooldown: 0.21, shotSpeed: 800, shotRadius: 10, rateLabel: 'Muito Rápida', sizeLabel: 'Médio-G',
+      name: 'Sigma Gigachad 3D', tag: 'BRAINROT', icon: '🗿', price: 70, buff: 3, maxHp: 280,
+      skillName: 'Mewing Shockwave', range: 390, cooldown: 3.8, skillDamage: Math.round(230 * 0.73),
+      weaponName: 'Rajada Leque Alfa', shotDamage: Math.round(15 * 0.73), shotCount: 3, shotSpread: 0.14, shotCooldown: 0.21, shotSpeed: 800, shotRadius: 10, rateLabel: 'Muito Rápida', sizeLabel: 'Médio-G',
       orbColors: ['#ffffff', '#e879f9', '#9333ea'],
       flameColors: ['#ffffff', '#f5d0fe', '#c026d3', '#6b21a8'],
-      desc: '3x Moedas | Dispara 3 orbes Sigma em leque com altíssima velocidade.',
+      desc: '3x Moedas | Vida: 280 | ⚠️ Nerf 27% Dano (Ajustado para equilibrio).',
       type: 'sigma' 
     },
     dominus: { 
-      name: 'Bacon Dominus 3D', tag: 'ROBLOX', icon: '👑', price: 100, buff: 4, 
-      skillName: 'Supernova Admin', range: 480, cooldown: 3.2, skillDamage: 280,
-      weaponName: 'Canhão Admin Supersonic', shotDamage: 28, shotCount: 3, shotSpread: 0.11, shotCooldown: 0.16, shotSpeed: 920, shotRadius: 13, rateLabel: 'Extrema', sizeLabel: 'Grande',
+      name: 'Bacon Dominus 3D', tag: 'ROBLOX', icon: '👑', price: 100, buff: 4, maxHp: 370,
+      skillName: 'Supernova Admin', range: 480, cooldown: 3.2, skillDamage: Math.round(280 * 0.73),
+      weaponName: 'Canhão Admin Supersonic', shotDamage: Math.round(28 * 0.73), shotCount: 3, shotSpread: 0.11, shotCooldown: 0.16, shotSpeed: 920, shotRadius: 13, rateLabel: 'Extrema', sizeLabel: 'Grande',
       orbColors: ['#ffffff', '#fde047', '#d97706'],
       flameColors: ['#ffffff', '#fef08a', '#f59e0b', '#991b1b'],
-      desc: '4x Moedas | Rajada extrema de 3 orbes dourados ultra-velozes de 28 de dano.',
+      desc: '4x Moedas | Vida: 370 | ⚠️ Nerf 27% Dano (Ajustado para equilibrio).',
       type: 'dominus' 
     },
     phoenix: { 
-      name: 'Fênix Cósmica 3D', tag: 'LENDÁRIO', icon: '🔥', price: 150, buff: 5, 
-      skillName: 'Supernova Solar', range: 540, cooldown: 2.8, skillDamage: 350,
-      weaponName: 'Chuva de Meteoros', shotDamage: 25, shotCount: 5, shotSpread: 0.22, shotCooldown: 0.14, shotSpeed: 980, shotRadius: 15, rateLabel: 'Máxima', sizeLabel: 'Gigante',
+      name: 'Fênix Cósmica 3D', tag: 'LENDÁRIO', icon: '🔥', price: 150, buff: 5, maxHp: 480,
+      skillName: 'Supernova Solar', range: 540, cooldown: 2.8, skillDamage: Math.round(350 * 0.73),
+      weaponName: 'Chuva de Meteoros', shotDamage: Math.round(25 * 0.73), shotCount: 5, shotSpread: 0.22, shotCooldown: 0.14, shotSpeed: 980, shotRadius: 15, rateLabel: 'Máxima', sizeLabel: 'Gigante',
       orbColors: ['#ffffff', '#ff9e00', '#ff0055'],
       flameColors: ['#ffffff', '#ffdd00', '#ff4500', '#880000'],
-      desc: '5x Moedas | Devastação total: 5 orbes gigantes solares em velocidade máxima.',
+      desc: '5x Moedas | Vida: 480 | ⚠️ Nerf 27% Dano (Ajustado para equilibrio).',
       type: 'phoenix' 
     }
   };
@@ -551,6 +572,7 @@
   function updateHUD(){
     coinsEl.textContent = '🪙 ' + totalCoins;
     shopCoinsEl.textContent = '🪙 ' + totalCoins;
+    hpValEl.textContent = `❤️ ${Math.max(0, Math.ceil(playerHp))}/${playerMaxHp}`;
     if(shopAchCountEl){
       shopAchCountEl.textContent = `${saveData.unlockedAchievements.length}/${ACHIEVEMENTS.length}`;
     }
@@ -559,14 +581,14 @@
     
     const skin = SKINS[activeSkin] || SKINS.noob;
     skillNameEl.textContent = `[E] ${skin.skillName}`;
-    skillDescEl.textContent = `Alcance: ${skin.range}px | Dano Boss: ${skin.skillDamage}`;
+    skillDescEl.textContent = `Alcance: ${skin.range}px | Dano: ${skin.skillDamage}`;
     skillIcon.childNodes[0].nodeValue = skin.icon;
 
     fireNameEl.textContent = `[F] ${skin.weaponName}`;
     fireDescEl.textContent = `Dano: ${skin.shotDamage}x${skin.shotCount} | Cadência: ${skin.rateLabel}`;
 
     if(menuCharBadge){
-      menuCharBadge.textContent = `${skin.icon} Equipado: ${skin.name} (Dano: ${skin.shotDamage} | ${skin.buff}x 🪙)`;
+      menuCharBadge.textContent = `${skin.icon} Equipado: ${skin.name} (Vida: ${skin.maxHp} | Dano: ${skin.shotDamage})`;
     }
   }
 
@@ -577,23 +599,44 @@
     }
     const powerLevel = getMiniBossPowerLevel();
     const totalAlive = miniBosses.length + (miniBossWave.active ? miniBossWave.toSpawn : 0);
-    hordeText.textContent = `ESQUADRÃO MINI BOSS LV.${powerLevel} · ${totalAlive} RESTANTES`;
+    hordeText.textContent = `ESQUADRÃO MINI BOSS LV.${powerLevel} · ${totalAlive} ALVOS`;
     hordeBadge.classList.remove('hidden');
+  }
+
+  function updateBuffHUD(){
+    if(activeBuff.timer > 0){
+      let label = '';
+      if(activeBuff.type === 'speed') label = `⚡ RAPIDEZ (${activeBuff.timer.toFixed(1)}s)`;
+      else if(activeBuff.type === 'heal') label = `❤️ VIDA EXTRA (${activeBuff.timer.toFixed(1)}s)`;
+      else if(activeBuff.type === 'immortal') label = `🛡️ IMORTAL (${activeBuff.timer.toFixed(1)}s)`;
+      else if(activeBuff.type === 'infinite_special') label = `💥 ESPECIAL INFINITA (${activeBuff.timer.toFixed(1)}s)`;
+      
+      buffText.textContent = label;
+      buffBadge.classList.remove('hidden');
+    } else {
+      buffBadge.classList.add('hidden');
+    }
   }
 
   function reset(){
     score=0;coinsInRun=0;elapsed=0;worldX=0;spawnTimer=.5;
     obstacles=[];fireParticles=[];smokeParticles=[];burstParticles=[];
-    playerProjectiles=[];bossProjectiles=[];floatingTexts=[];
+    playerProjectiles=[];bossProjectiles=[];powerUpItems=[];floatingTexts=[];
     shake=0; skillCooldownTimer=0; shootCooldownTimer=0; destructionAnim=null;
     currentBoss=null; obstaclesPassedCount=0;
     miniBosses=[];
+    activeBuff = { type: null, timer: 0 };
+
+    const skin = SKINS[activeSkin] || SKINS.noob;
+    playerMaxHp = skin.maxHp || 100;
+    playerHp = playerMaxHp;
+
     miniBossWave = {
       active: false,
       toSpawn: 0,
       spawnedInWave: 0,
       spawnTimer: 0,
-      cooldownTimer: 3.5, // Primeira horda surge logo aos 3.5s
+      cooldownTimer: 3.5,
       waveNumber: 0,
       template: null,
       formation: 'sine'
@@ -602,6 +645,7 @@
     scoreEl.textContent='0';
     updateHUD();
     updateHordeHUD();
+    updateBuffHUD();
   }
 
   function start(){
@@ -614,6 +658,22 @@
     sound(220,.25,'sawtooth',.07);
   }
 
+  function damagePlayer(amount){
+    if(activeBuff.type === 'immortal'){
+      addFloatingText(plane.x, plane.y - 20, 'BLOQUEADO (IMORTAL)!', '#00ffff', 14);
+      return;
+    }
+    playerHp -= amount;
+    shake = Math.max(shake, 14);
+    sound(100, .2, 'sawtooth', 0.08);
+    updateHUD();
+    addFloatingText(plane.x, plane.y - 15, `-${amount} HP`, '#ff4d4d', 16);
+
+    if(playerHp <= 0){
+      gameOver();
+    }
+  }
+
   function gameOver(){
     if(state!=='playing')return;
     state='over';shake=26;
@@ -622,6 +682,7 @@
     checkAchievements();
     saveGame();
     updateHordeHUD();
+    updateBuffHUD();
     burst(plane.x, plane.y, '#ff5500', 38);
     $('finalScore').textContent=score;
     $('finalGems').textContent=coinsInRun;
@@ -635,26 +696,22 @@
     else if(state==='paused'){state='playing';pauseScreen.classList.add('hidden');lastTime=performance.now();}
   }
 
-  // --- CÁLCULO DE ESCALA DE FORÇA DOS MINI BOSSES AO LONGO DO TEMPO ---
   function getMiniBossPowerLevel(){
-    // Sobe 1 nível a cada 18 segundos de partida ou a cada 8 pontos
     return 1 + Math.floor(elapsed / 18) + Math.floor(score / 10);
   }
 
   function startMiniBossWave(){
     miniBossWave.waveNumber++;
     miniBossWave.active = true;
-    // Quantidade: sempre entre 4 e 5 Mini Bosses por esquadrão!
     miniBossWave.toSpawn = Math.random() < 0.5 ? 4 : 5;
     miniBossWave.spawnedInWave = 0;
-    // Primeiro da fila entra imediatamente, e os próximos a cada 1.8s!
     miniBossWave.spawnTimer = 0.05;
     miniBossWave.template = BOSS_ROSTER[(miniBossWave.waveNumber - 1) % BOSS_ROSTER.length];
     const formations = ['sine', 'echelon', 'hunter'];
     miniBossWave.formation = formations[miniBossWave.waveNumber % formations.length];
 
     const lv = getMiniBossPowerLevel();
-    showToast(`⚠️ HORDA DE ${miniBossWave.toSpawn} MINI BOSSES (${miniBossWave.template.shortName} LV.${lv})! +1 a cada 1,8s!`);
+    showToast(`⚠️ HORDA DE ${miniBossWave.toSpawn} MINI BOSSES (${miniBossWave.template.shortName} LV.${lv})!`);
     sound(310, 0.22, 'sawtooth', 0.065);
   }
 
@@ -664,19 +721,15 @@
     miniBossWave.spawnedInWave++;
     miniBossWave.toSpawn--;
 
-    // Usa o mesmo personagem do Boss atual da horda (ou alterna ocasionalmente em níveis altos)
     const template = (lv >= 3 && Math.random() < 0.35)
       ? BOSS_ROSTER[Math.floor(Math.random() * BOSS_ROSTER.length)]
       : miniBossWave.template;
 
-    // Progressão de força com o tempo (HP, velocidade, frequência de tiro e recompensa)
     const maxHp = Math.round(32 + (lv - 1) * 18);
     const moveSpeed = Math.min(265, 138 + (lv - 1) * 14);
     const shootInterval = Math.max(1.15, 2.35 - (lv - 1) * 0.14);
     const bulletSpeed = Math.min(440, 285 + (lv - 1) * 18);
     const scale = clamp(0.55 + (lv - 1) * 0.015, 0.55, 0.68);
-
-    // Distribuição vertical tática para os 4 a 5 Mini Bosses não ficarem sobrepostos
     const laneSlots = [105, 185, 265, 345, 415];
     const baseY = laneSlots[indexInWave % laneSlots.length];
 
@@ -709,10 +762,8 @@
 
     if(miniBossWave.toSpawn <= 0){
       miniBossWave.active = false;
-      // Próxima onda de 4 a 5 Mini Bosses após intervalo (diminui levemente com o tempo)
       miniBossWave.cooldownTimer = Math.max(6.5, 11.5 - lv * 0.45);
     } else {
-      // Exatamente 1,8 segundos entre cada Mini Boss da horda!
       miniBossWave.spawnTimer = 1.8;
     }
   }
@@ -742,7 +793,6 @@
     addFloatingText(mb.x, mb.y - 16, `+${mb.scoreReward} PTS · +${finalCoins} 🪙`, '#fde047', 14);
   }
 
-  // --- BOSS PRINCIPAL ---
   function spawnBoss(){
     const bossIndex = Math.floor(obstaclesPassedCount / 12);
     const template = BOSS_ROSTER[(bossIndex - 1) % BOSS_ROSTER.length];
@@ -767,7 +817,7 @@
       shootInterval: Math.max(0.85, 1.32 - (bossIndex - 1) * 0.07),
       state: 'entering'
     };
-    showToast(`🚨 CHEFE GIGANTE SURGIU: ${currentBoss.name} (${maxHp} HP)! Atire (F)!`);
+    showToast(`🚨 CHEFE GIGANTE SURGIU: ${currentBoss.name} (${maxHp} HP)!`);
     sound(140, .45, 'sawtooth', 0.09);
   }
 
@@ -859,12 +909,16 @@
   function triggerDestructionSkill(){
     if(state !== 'playing') return;
     const skin = SKINS[activeSkin] || SKINS.noob;
-    if(skillCooldownTimer > 0) {
+    
+    if(skillCooldownTimer > 0 && activeBuff.type !== 'infinite_special') {
       showToast('Poder em recarga! Aguarde o cooldown.');
       return;
     }
 
-    skillCooldownTimer = skin.cooldown;
+    if(activeBuff.type !== 'infinite_special'){
+      skillCooldownTimer = skin.cooldown;
+    }
+
     shake = 24;
     sound(110, .35, 'square', 0.1);
 
@@ -886,7 +940,6 @@
     bossProjectiles.forEach(bp => burst(bp.x, bp.y, '#ff0055', 8));
     bossProjectiles = [];
 
-    // Dano em área nos Mini Bosses dentro do alcance
     for(let i = miniBosses.length - 1; i >= 0; i--){
       const mb = miniBosses[i];
       const distMb = Math.hypot(mb.x - plane.x, mb.y - plane.y);
@@ -953,10 +1006,10 @@
           <div class="shop-title"><span>${skin.icon} ${skin.name}</span><span class="shop-tag">${skin.tag}</span></div>
           <div class="shop-desc">${skin.desc}</div>
           <div class="weapon-stats-box">
+            <span>❤️ Vida: <b>${skin.maxHp}</b></span>
             <span>🔮 Dano: <b>${skin.shotDamage}</b></span>
             <span>🔢 Tiros: <b>${skin.shotCount}x</b></span>
             <span>⚡ Cadência: <b>${skin.rateLabel}</b></span>
-            <span>⭕ Tamanho: <b>${skin.sizeLabel}</b></span>
           </div>
           <div class="shop-footer">
             <span style="font-size:8.5px; color:#ff9999;">Poder [E]: ${skin.skillName} · ${skin.buff}x 🪙</span>
@@ -1212,6 +1265,20 @@
       hasCoin: Math.random() < .88
     });
 
+    // SPAWN DE RECURSO ESPECIAL (MOMENTOS ESPECIAIS) DE FORMA ALEATÓRIA ENTRE OS OBSTÁCULOS (30% de chance)
+    if(Math.random() < 0.30){
+      const buffTypes = ['speed', 'heal', 'immortal', 'infinite_special'];
+      const chosenType = buffTypes[Math.floor(Math.random() * buffTypes.length)];
+      powerUpItems.push({
+        x: W + 45 + width / 2,
+        y: baseCenter + rand(-40, 40),
+        type: chosenType,
+        r: 16,
+        taken: false,
+        phase: rand(0, 6.28)
+      });
+    }
+
     obstaclesPassedCount++;
     if(obstaclesPassedCount % 12 === 0 && !currentBoss){
       spawnBoss();
@@ -1251,9 +1318,7 @@
   }
 
   function updateMiniBosses(dt){
-    // Controle de onda / esquadrão de 4 a 5 Mini Bosses a cada 1,8s
     if(!miniBossWave.active){
-      // Inicia nova onda quando não houver um Boss gigante bloqueando toda a tela (ou se já passou tempo suficiente)
       if(!currentBoss && miniBosses.length === 0){
         miniBossWave.cooldownTimer -= dt;
         if(miniBossWave.cooldownTimer <= 0){
@@ -1267,14 +1332,12 @@
       }
     }
 
-    // Atualização individual de cada Mini Boss ativo
     for(let i = miniBosses.length - 1; i >= 0; i--){
       const mb = miniBosses[i];
       mb.hitFlash = Math.max(0, mb.hitFlash - dt * 4.5);
       mb.x -= mb.vx * dt;
 
       if(mb.formation === 'hunter'){
-        // Perseguição vertical suave em direção à altitude do jogador
         const desiredY = clamp(plane.y + Math.sin(elapsed * 3.5 + mb.phase) * 48, 70, H - 80);
         mb.y += (desiredY - mb.y) * 2.1 * dt;
       } else if(mb.formation === 'echelon'){
@@ -1283,7 +1346,6 @@
         mb.y = clamp(mb.baseY + Math.sin(elapsed * 3.2 + mb.phase) * 45, 70, H - 80);
       }
 
-      // Disparo do Mini Boss enquanto estiver na frente do jogador
       if(mb.x > plane.x + 80 && mb.x < W - 20){
         mb.shootTimer -= dt;
         if(mb.shootTimer <= 0){
@@ -1301,14 +1363,12 @@
         }
       }
 
-      // Colisão física direta com a nave do jogador
       const hitDist = 22 + 36 * mb.scale;
       if(Math.hypot(plane.x - mb.x, plane.y - mb.y) < hitDist){
-        gameOver();
-        return;
+        damagePlayer(35);
+        mb.x = -100;
       }
 
-      // Saiu pela esquerda da tela
       if(mb.x < -75){
         miniBosses.splice(i, 1);
       }
@@ -1320,8 +1380,19 @@
   function update(dt){
     if(state!=='playing')return;
     elapsed += dt;
-    const speed = physics.speed + Math.min(130, score * 2.4);
+
+    const speedMultiplier = (activeBuff.type === 'speed') ? 1.45 : 1.0;
+    const speed = (physics.speed + Math.min(130, score * 2.4)) * speedMultiplier;
     worldX += speed * dt;
+
+    if(activeBuff.timer > 0){
+      activeBuff.timer -= dt;
+      if(activeBuff.timer <= 0){
+        activeBuff.type = null;
+        showToast('⚡ Buff especial encerrado!');
+      }
+      updateBuffHUD();
+    }
 
     plane.vy += physics.gravity * dt;
     plane.y += plane.vy * dt;
@@ -1332,7 +1403,7 @@
 
     emitRocketPropulsion(plane.x, plane.y, plane.rot, plane.thrustBoost);
 
-    if(skillCooldownTimer > 0){
+    if(skillCooldownTimer > 0 && activeBuff.type !== 'infinite_special'){
       skillCooldownTimer -= dt;
       cdOverlay.classList.remove('hidden');
       cdOverlay.textContent = Math.ceil(skillCooldownTimer) + 's';
@@ -1346,6 +1417,11 @@
 
     if(autoFire && shootCooldownTimer <= 0){
       shootPlayerOrbs();
+    }
+
+    if(activeBuff.type === 'infinite_special' && skillCooldownTimer <= 0){
+      triggerDestructionSkill();
+      skillCooldownTimer = 0.8;
     }
 
     if(destructionAnim){
@@ -1371,7 +1447,6 @@
       if(p.y > H - 40) p.y = 0;
     });
 
-    // Atualiza esquadrão de Mini Bosses
     updateMiniBosses(dt);
 
     if(currentBoss){
@@ -1437,13 +1512,11 @@
       }
     }
 
-    // Colisão dos projéteis do jogador
     playerProjectiles.forEach(pp => {
       pp.x += pp.vx * dt;
       pp.y += pp.vy * dt;
       pp.life -= dt;
 
-      // 1. Acerto no Boss Principal
       if(currentBoss && pp.life > 0){
         if(Math.hypot(pp.x - currentBoss.x, pp.y - currentBoss.y) < 46 + pp.r){
           pp.life = 0;
@@ -1459,7 +1532,6 @@
         }
       }
 
-      // 2. Acerto nos Mini Bosses
       if(pp.life > 0){
         for(let i = miniBosses.length - 1; i >= 0; i--){
           const mb = miniBosses[i];
@@ -1480,7 +1552,6 @@
         }
       }
 
-      // 3. Interceptação de projéteis inimigos
       if(pp.life > 0){
         bossProjectiles.forEach(bp => {
           if(bp.r > 0 && Math.hypot(pp.x - bp.x, pp.y - bp.y) < pp.r + bp.r + 4){
@@ -1493,7 +1564,6 @@
         });
       }
 
-      // 4. Quebra de Torres / Obstáculos
       if(pp.life > 0){
         obstacles.forEach(o => {
           if(pp.life <= 0) return;
@@ -1539,10 +1609,44 @@
       bp.x += bp.vx * dt;
       bp.y += bp.vy * dt;
       if(Math.hypot(plane.x - bp.x, plane.y - bp.y) < 19 + bp.r * 0.7){
-        gameOver();
+        damagePlayer(25);
+        bp.r = -1;
       }
     });
     bossProjectiles = bossProjectiles.filter(bp => bp.r > 0 && bp.x > -50 && bp.x < W + 50 && bp.y > 0 && bp.y < H);
+
+    powerUpItems.forEach(pu => {
+      pu.x -= speed * dt;
+      if(!pu.taken && Math.hypot(plane.x - pu.x, plane.y - pu.y) < 36){
+        pu.taken = true;
+        activeBuff.type = pu.type;
+        activeBuff.timer = 5.0;
+
+        if(pu.type === 'heal'){
+          const healAmount = Math.round(playerMaxHp * 0.4);
+          playerHp = Math.min(playerMaxHp, playerHp + healAmount);
+          addFloatingText(pu.x, pu.y, `+${healAmount} HP (CURA)`, '#22c55e', 16);
+          showToast('❤️ VIDA EXTRA CONCEDIDA!');
+          sound(850, 0.2, 'triangle', 0.08);
+        } else if(pu.type === 'speed'){
+          addFloatingText(pu.x, pu.y, '⚡ RAPIDEZ (5s)', '#38bdf8', 16);
+          showToast('⚡ BUFF DE RAPIDEZ ATIVADO!');
+          sound(950, 0.2, 'square', 0.07);
+        } else if(pu.type === 'immortal'){
+          addFloatingText(pu.x, pu.y, '🛡️ IMORTAL (5s)', '#facc15', 16);
+          showToast('🛡️ IMORTALIDADE ATIVADA!');
+          sound(1050, 0.22, 'sine', 0.08);
+        } else if(pu.type === 'infinite_special'){
+          addFloatingText(pu.x, pu.y, '💥 ESPECIAL INFINITA (5s)', '#ff0055', 16);
+          showToast('💥 PODER ESPECIAL AUTOMÁTICO INFINITO!');
+          sound(1150, 0.25, 'sawtooth', 0.09);
+        }
+        updateHUD();
+        updateBuffHUD();
+        burst(pu.x, pu.y, '#38bdf8', 20);
+      }
+    });
+    powerUpItems = powerUpItems.filter(pu => !pu.taken && pu.x > -50);
 
     obstacles.forEach(o => {
       o.x -= speed * dt;
@@ -1589,13 +1693,14 @@
       const hitX = plane.x + 22 > o.x && plane.x - 22 < o.x + o.w;
       const hitGap = (!o.topBroken && plane.y - 15 < o.gapTop) || (!o.bottomBroken && plane.y + 15 > o.gapBottom);
       if(hitX && hitGap){
-        gameOver();
+        damagePlayer(40);
+        o.x = -200;
       }
     });
     obstacles = obstacles.filter(o => o.x + o.w > -100);
 
     if(plane.y < -15 || plane.y > H - 44){
-      gameOver();
+      damagePlayer(playerMaxHp);
     }
 
     updateParticles(dt);
@@ -1869,6 +1974,26 @@
     ctx.restore();
   }
 
+  function drawPowerUp(pu){
+    ctx.save();
+    ctx.translate(pu.x, pu.y + Math.sin(elapsed * 5 + pu.phase) * 8);
+    const pulse = Math.sin(elapsed * 8) * 4 + 18;
+
+    let color = '#38bdf8';
+    let symbol = '⚡';
+    if(pu.type === 'heal'){ color = '#22c55e'; symbol = '❤️'; }
+    else if(pu.type === 'immortal'){ color = '#facc15'; symbol = '🛡️'; }
+    else if(pu.type === 'infinite_special'){ color = '#ff0055'; symbol = '💥'; }
+
+    ctx.shadowColor = color; ctx.shadowBlur = pulse;
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(0, 0, pu.r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, 0, pu.r * 0.65, 0, Math.PI * 2); ctx.fill();
+
+    ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(symbol, 0, 1);
+    ctx.restore();
+  }
+
   function drawPlayerProjectiles(){
     playerProjectiles.forEach(pp => {
       ctx.save();
@@ -1889,7 +2014,6 @@
     });
   }
 
-  // --- RENDERIZAÇÃO 3D COMPARTILHADA ENTRE BOSS E MINI BOSSES ---
   function drawBossEntityModel(entity){
     if(entity.hitFlash > 0) ctx.filter = 'brightness(1.85)';
 
@@ -1921,37 +2045,30 @@
       ctx.beginPath(); ctx.arc(-4, -24, 9, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
 
     } else if(entity.type === 'skibidi_boss'){
-      // Base de porcelana 3D
       ctx.fillStyle = '#cbd5e1';
       ctx.beginPath(); ctx.roundRect(-26, 6, 52, 34, 10); ctx.fill();
       ctx.fillStyle = '#f8fafc';
       ctx.beginPath(); ctx.ellipse(0, 8, 30, 11, 0, 0, Math.PI * 2); ctx.fill();
-      // Tanque traseiro
       ctx.fillStyle = '#e2e8f0';
       ctx.fillRect(16, -28, 18, 38);
-      // Canhão frontal
       ctx.fillStyle = '#0284c7';
       ctx.fillRect(-56, -4, 32, 14);
-      // Cabeça 3D emergindo
       let headGrad = ctx.createRadialGradient(-6, -26, 4, -4, -24, 24);
       headGrad.addColorStop(0, '#fed7aa'); headGrad.addColorStop(1, '#c2410c');
       ctx.fillStyle = headGrad;
       ctx.beginPath(); ctx.arc(-4, -24, 21, 0, Math.PI * 2); ctx.fill();
-      // Olhos brilhantes cyan
       ctx.fillStyle = '#00f7ff'; ctx.shadowColor = '#00f7ff'; ctx.shadowBlur = 12;
       ctx.beginPath(); ctx.arc(-13, -27, 4, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(-2, -27, 4, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
 
     } else if(entity.type === 'sigma_boss'){
-      // Monólito Gigachad 3D
       let stoneGrad = ctx.createLinearGradient(-28, -52, 28, 46);
       stoneGrad.addColorStop(0, '#a1a1aa'); stoneGrad.addColorStop(0.5, '#52525b'); stoneGrad.addColorStop(1, '#18181b');
       ctx.fillStyle = stoneGrad;
       ctx.beginPath();
       ctx.moveTo(-24, -48); ctx.lineTo(24, -44); ctx.lineTo(30, 12); ctx.lineTo(14, 46); ctx.lineTo(-28, 38); ctx.lineTo(-34, -8);
       ctx.closePath(); ctx.fill();
-      // Queixo esculpido & aura roxa
       ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.fillStyle = '#e879f9'; ctx.shadowColor = '#e879f9'; ctx.shadowBlur = 14;
@@ -1960,15 +2077,12 @@
       ctx.shadowBlur = 0;
 
     } else if(entity.type === 'dominus_boss'){
-      // Capuz escuro Dominus + Chifres Dourados 3D
       ctx.fillStyle = '#0f172a';
       ctx.beginPath(); ctx.moveTo(0, -54); ctx.lineTo(38, 36); ctx.lineTo(-38, 36); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.stroke();
-      // Chifres laterais
       ctx.fillStyle = '#facc15';
       ctx.beginPath(); ctx.moveTo(-22, -26); ctx.lineTo(-48, -52); ctx.lineTo(-14, -40); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(22, -26); ctx.lineTo(48, -52); ctx.lineTo(14, -40); ctx.closePath(); ctx.fill();
-      // Vazio facial com olhos dourados
       ctx.fillStyle = '#020617';
       ctx.beginPath(); ctx.arc(0, -6, 18, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#fde047'; ctx.shadowColor = '#fde047'; ctx.shadowBlur = 14;
@@ -1977,23 +2091,19 @@
       ctx.shadowBlur = 0;
 
     } else if(entity.type === 'shark_boss'){
-      // Tubarão Mecânico 3D
       let sharkGrad = ctx.createLinearGradient(0, -34, 0, 34);
       sharkGrad.addColorStop(0, '#0284c7'); sharkGrad.addColorStop(0.6, '#0369a1'); sharkGrad.addColorStop(1, '#e0f2fe');
       ctx.fillStyle = sharkGrad;
       ctx.beginPath();
       ctx.moveTo(-56, 0); ctx.quadraticCurveTo(-18, -36, 44, -14); ctx.lineTo(60, -30); ctx.lineTo(48, 0); ctx.lineTo(60, 30); ctx.lineTo(44, 14); ctx.quadraticCurveTo(-18, 36, -56, 0);
       ctx.closePath(); ctx.fill();
-      // Barbatana dorsal
       ctx.fillStyle = '#075985';
       ctx.beginPath(); ctx.moveTo(-6, -24); ctx.lineTo(12, -52); ctx.lineTo(20, -20); ctx.closePath(); ctx.fill();
-      // Olho cibernético
       ctx.fillStyle = '#80ffea'; ctx.shadowColor = '#80ffea'; ctx.shadowBlur = 12;
       ctx.beginPath(); ctx.arc(-28, -7, 5, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
 
     } else {
-      // Fênix Solar 3D / Padrão
       let bossGrad = ctx.createRadialGradient(-14, -14, 6, 0, 0, 52);
       bossGrad.addColorStop(0, '#ffffff'); bossGrad.addColorStop(0.45, entity.color); bossGrad.addColorStop(1, '#14050a');
       ctx.fillStyle = bossGrad; ctx.beginPath(); ctx.arc(0, 0, 48, 0, Math.PI*2); ctx.fill();
@@ -2017,17 +2127,14 @@
       ctx.save();
       ctx.translate(mb.x, mb.y);
 
-      // Sombra projetada
       ctx.fillStyle = 'rgba(0,0,0,0.34)';
       ctx.beginPath(); ctx.ellipse(0, 38 * mb.scale, 34 * mb.scale, 9 * mb.scale, 0, 0, Math.PI * 2); ctx.fill();
 
-      // Desenha o mesmo personagem 3D do Boss em escala reduzida
       ctx.save();
       ctx.scale(mb.scale, mb.scale);
       drawBossEntityModel(mb);
       ctx.restore();
 
-      // Tag de Nível (LV.X) + Mini Barra de Vida acima do Mini Boss
       const barW = 54, barH = 6;
       const topY = -48 * mb.scale;
       const hpRatio = clamp(mb.hp / mb.maxHp, 0, 1);
@@ -2111,6 +2218,13 @@
     ctx.translate(plane.x - plane.recoil, plane.y);
     ctx.rotate(plane.rot);
 
+    if(activeBuff.type === 'immortal'){
+      ctx.save();
+      ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 3; ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(0, 22, 28, 7, 0, 0, Math.PI * 2); ctx.fill();
     drawAttachedRocketFlame(skin);
 
@@ -2191,6 +2305,8 @@
       }
     });
 
+    powerUpItems.forEach(pu => drawPowerUp(pu));
+
     drawPlayerProjectiles();
     drawMiniBosses();
     drawBoss();
@@ -2260,7 +2376,6 @@
     requestAnimationFrame(loop);
   }
 
-  // --- VINCULAÇÃO DOS BOTÕES DO MENU E HUD ---
   const startBtn = $('startBtn');
   const shopBtnStart = $('shopBtnStart');
   const shopBtnOver = $('shopBtnOver');
