@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#120505">
-<title>AIRPOCALYPSE 3D — Combate Aéreo, Brainrot, Roblox & Chefes</title>
+<title>AIRPOCALYPSE 3D — Combate Aéreo, Mini Bosses, Brainrot & Roblox</title>
 <style>
   :root { color-scheme: dark; --ink:#ffeaea; --muted:#e0a3a3; --glass:rgba(30,8,8,.78); --line:rgba(255,90,90,.35); }
   * { box-sizing:border-box; user-select:none; -webkit-user-select:none; }
@@ -26,6 +26,12 @@
   .icon-btn { width:38px;height:38px;border:1px solid var(--line);border-radius:13px;background:rgba(30,10,10,.78);color:white;font-size:16px;cursor:pointer;backdrop-filter:blur(12px);pointer-events:auto; transition:.15s; }
   .icon-btn:hover,.btn:hover { filter:brightness(1.2);transform:translateY(-1px); }
 
+  /* INDICADOR DE HORDA DE MINI BOSSES */
+  .horde-badge { position:absolute; z-index:3; top:68px; right:18px; padding:6px 12px; border-radius:12px; border:1px solid rgba(251,146,60,.55); background:rgba(35,12,6,.84); backdrop-filter:blur(10px); font-size:10px; font-weight:900; letter-spacing:.06em; color:#fed7aa; display:flex; align-items:center; gap:7px; pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,.45); transition:opacity .25s, transform .25s; }
+  .horde-badge.hidden { opacity:0; transform:translateY(-8px); }
+  .horde-dot { width:8px; height:8px; border-radius:99px; background:#f97316; box-shadow:0 0 10px #f97316; animation:pulseDot 1s infinite alternate; }
+  @keyframes pulseDot { from { transform:scale(0.8); opacity:.6; } to { transform:scale(1.25); opacity:1; } }
+
   /* OVERLAYS & PANELS */
   .overlay { position:absolute;z-index:4;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(180deg,rgba(25,5,5,.48),rgba(10,2,2,.85)); pointer-events:auto; }
   .overlay.hidden { display:none !important; pointer-events:none; }
@@ -33,7 +39,7 @@
   .eyebrow { color:#ff8c8c;font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase; text-shadow:0 0 10px rgba(200,0,0,.4); }
   h1 { margin:6px 0 0;font-size:clamp(25px,4vw,38px);line-height:.95;font-weight:1000;letter-spacing:.12em;text-indent:.12em;background:linear-gradient(180deg,#fff 8%,#ffb5b5 65%,#cc3333);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 5px 20px rgba(200,30,30,.6)); }
   .subtitle { margin:6px 0 8px;color:#e8acaq;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase; font-weight:700; }
-  .story { max-width:460px;margin:0 auto 10px;color:#fce4e4;font-size:11px;line-height:1.48; }
+  .story { max-width:480px;margin:0 auto 10px;color:#fce4e4;font-size:11px;line-height:1.48; }
   .active-char-pill { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; margin-bottom:8px; border-radius:999px; background:rgba(255,204,0,.15); border:1px solid rgba(255,204,0,.45); font-size:11px; font-weight:800; color:#ffe680; }
   .btn-group { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px; pointer-events:auto; }
   .btn { border:0;border-radius:14px;padding:11px 18px;min-width:135px;background:linear-gradient(135deg,#d94336,#991c1c);color:#fff;font-weight:950;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 24px rgba(180,30,30,.4);transition:.16s ease; text-shadow:0 1px 3px rgba(0,0,0,.5); pointer-events:auto; }
@@ -86,7 +92,7 @@
   .ach-banner-title { font-size:13px; font-weight:900; color:#fff; margin-top:1px; }
   .ach-banner-reward { font-size:10px; font-weight:800; color:#86efac; margin-top:2px; }
 
-  /* BACKUP / SAVE GITHUB PAGES */
+  /* BACKUP / SAVE */
   .save-box { display:flex; flex-direction:column; gap:8px; text-align:left; padding:6px 2px; }
   .save-info { font-size:10px; color:#fce4e4; line-height:1.45; background:rgba(0,0,0,.3); padding:10px; border-radius:12px; border:1px solid rgba(255,120,120,.22); }
   .save-input { width:100%; padding:9px 11px; border-radius:11px; border:1px solid rgba(255,120,120,.35); background:rgba(10,4,4,.85); color:#fde047; font-family:monospace; font-size:10px; outline:none; user-select:text; -webkit-user-select:text; }
@@ -122,6 +128,7 @@
     body{padding:0;background:#050202}.shell{width:100vw;height:100dvh;max-height:none;aspect-ratio:auto;border:0;border-radius:0}
     .topbar{top:max(10px,env(safe-area-inset-top));left:10px;right:10px}.brand-mark{width:30px;height:30px}.brand-name{font-size:14px}.brand-sub{font-size:7.5px}
     .hud{gap:4px}.pill{min-width:52px;padding:5px 7px;border-radius:10px}.pill-label{font-size:7px}.pill-value{font-size:13px}.icon-btn{width:32px;height:32px;border-radius:10px}
+    .horde-badge{top:54px;right:10px;font-size:8.5px;padding:4px 8px}
     .panel{padding:15px 12px 13px}.footer-note{display:none}
     .combat-bar{bottom:max(10px,env(safe-area-inset-bottom));left:10px;right:10px}
     .skill-hud,.fire-hud{padding:5px 8px;gap:7px}
@@ -133,7 +140,7 @@
 </head>
 <body>
 <main class="shell" aria-label="Jogo Airpocalypse 3D Combate">
-  <canvas id="game" width="960" height="540" aria-label="Área do jogo 3D com tiros de orbes de energia, chefes permanentes e mapas dinâmicos"></canvas>
+  <canvas id="game" width="960" height="540" aria-label="Área do jogo 3D com tiros de orbes de energia, mini bosses em hordas, chefes permanentes e mapas dinâmicos"></canvas>
   
   <div class="topbar">
     <div class="brand">
@@ -149,6 +156,12 @@
       <button class="icon-btn" id="achHudBtn" aria-label="Conquistas" title="Conquistas & Recompensas">🏆</button>
       <button class="icon-btn" id="pauseBtn" aria-label="Pausar" title="Pausar (P)">Ⅱ</button>
     </div>
+  </div>
+
+  <!-- BADGE DE HORDA DE MINI BOSSES -->
+  <div class="horde-badge hidden" id="hordeBadge">
+    <span class="horde-dot"></span>
+    <span id="hordeText">ESQUADRÃO MINI BOSS LV.1 · 4 ALVOS</span>
   </div>
 
   <!-- BARRA DE COMBATE INFERIOR -->
@@ -194,11 +207,11 @@
   <!-- MENU INICIAL -->
   <section class="overlay" id="startScreen">
     <div class="panel">
-      <div class="eyebrow">⚠ Combate Aéreo 3D · Brainrot, Roblox & Zoox ⚠</div>
+      <div class="eyebrow">⚠ Combate Aéreo 3D · Hordas Mini Boss, Brainrot & Roblox ⚠</div>
       <h1>AIRPOCALYPSE 3D</h1>
-      <div class="subtitle">CONQUISTAS · CHEFES ROBLOX/BRAINROT · SAVE AUTOMÁTICO</div>
+      <div class="subtitle">MINI BOSSES ESCALÁVEIS · CHEFES ROBLOX/BRAINROT · CONQUISTAS</div>
       <div class="active-char-pill" id="menuCharBadge">🧱 Equipado: Foguete Noob Roblox 3D (Dano: 10 | 1 Tiro)</div>
-      <p class="story">Atire <b>Orbes de Energia (F)</b> com buffs de cada personagem, complete <b>Conquistas</b> para ganhar moedas extras e derrote o <b>Rei Noob Titã 3D</b> e outros Chefes Permanentes!</p>
+      <p class="story">Enfrente esquadrões de <b>4 a 5 Mini Bosses</b> que surgem a cada <b>1,8s</b> e ficam mais fortes com o tempo, além dos <b>Chefes Gigantes 3D</b>! Atire <b>Orbes (F)</b> e detone tudo com <b>[E]</b>.</p>
       <div class="btn-group">
         <button class="btn" id="startBtn" type="button">Decolar & Combater</button>
         <button class="btn btn-sec" id="shopBtnStart" type="button">Hangar & Mapas</button>
@@ -232,7 +245,7 @@
     <div class="panel" style="width:min(660px,96%);">
       <div class="eyebrow">Centro de Comando Interdimensional 3D</div>
       <h1 style="font-size:25px">HANGAR, CONQUISTAS & SAVE</h1>
-      <div class="subtitle">Moedas: <span id="shopCoins" style="color:#ffcc00; font-weight:900;">🪙 0</span> · Conquistas: <span id="shopAchCount" style="color:#4ade80; font-weight:900;">0/12</span></div>
+      <div class="subtitle">Moedas: <span id="shopCoins" style="color:#ffcc00; font-weight:900;">🪙 0</span> · Conquistas: <span id="shopAchCount" style="color:#4ade80; font-weight:900;">0/13</span></div>
       
       <div class="tabs" style="flex-wrap:wrap;">
         <button class="tab-btn active" id="tabSkinsBtn" type="button">Personagens 3D</button>
@@ -272,14 +285,15 @@
   const skillHud = $('skillHud'), skillIcon = $('skillIcon'), cdOverlay = $('cdOverlay'), skillNameEl = $('skillName'), skillDescEl = $('skillDesc');
   const fireHud = $('fireHud'), fireNameEl = $('fireName'), fireDescEl = $('fireDesc'), autoFireBtn = $('autoFireBtn');
   const achBanner = $('achBanner'), achBannerIcon = $('achBannerIcon'), achBannerTitle = $('achBannerTitle'), achBannerReward = $('achBannerReward');
+  const hordeBadge = $('hordeBadge'), hordeText = $('hordeText');
   
   const W = 960, H = 540;
-  const SAVE_KEY = 'airpocalypse_save_v3';
+  const SAVE_KEY = 'airpocalypse_save_v4';
 
   let state = 'menu', lastTime = 0, elapsed = 0, score = 0, coinsInRun = 0;
 
   let saveData = {
-    version: 3,
+    version: 4,
     totalCoins: 100,
     bestScore: 0,
     activeSkin: 'noob',
@@ -290,6 +304,7 @@
     stats: {
       totalObstacles: 0,
       bossesDefeated: 0,
+      miniBossesDefeated: 0,
       robloxBossDefeated: 0,
       totalCoinsCollected: 0,
       shotsFired: 0,
@@ -333,15 +348,39 @@
   let achQueue = [];
   let achBannerTimer = 0;
 
+  // SISTEMA DE BOSS PRINCIPAL & ESQUADRÕES DE MINI BOSSES
   let currentBoss = null;
+  let miniBosses = [];
+  let miniBossWave = {
+    active: false,
+    toSpawn: 0,
+    spawnedInWave: 0,
+    spawnTimer: 0,
+    cooldownTimer: 4.5, // Primeira onda de Mini Bosses começa após 4.5s de voo
+    waveNumber: 0,
+    template: null,
+    formation: 'sine'
+  };
+
   let bossProjectiles = [];
   let playerProjectiles = [];
   let floatingTexts = [];
   let obstaclesPassedCount = 0;
 
+  // ROSTER COMPARTILHADO ENTRE BOSSES E MINI BOSSES
+  const BOSS_ROSTER = [
+    { id: 'roblox_noob', shortName: 'Noob Titã', name: 'Rei Noob Titã 3D (Roblox)', color: '#0284c7', secondary: '#facc15', eyeColor: '#ff0044', type: 'roblox_noob', pattern: 'aimed' },
+    { id: 'skibidi_king', shortName: 'Skibidi', name: 'Imperador Skibidi 3D', color: '#e2e8f0', secondary: '#0284c7', eyeColor: '#00f7ff', type: 'skibidi_boss', pattern: 'spread' },
+    { id: 'sigma_lord', shortName: 'Gigachad', name: 'Gigachad Supremo 3D', color: '#71717a', secondary: '#a855f7', eyeColor: '#e879f9', type: 'sigma_boss', pattern: 'wave' },
+    { id: 'dominus_admin', shortName: 'Dominus', name: 'Admin Bacon Dominus 3D', color: '#1e293b', secondary: '#facc15', eyeColor: '#fde047', type: 'dominus_boss', pattern: 'spread' },
+    { id: 'cyber_shark', shortName: 'Tubarão', name: 'Tubarão Leviatã 3D', color: '#0077b6', secondary: '#00b4d8', eyeColor: '#80ffea', type: 'shark_boss', pattern: 'aimed' },
+    { id: 'solar_phoenix', shortName: 'Fênix', name: 'Fênix Apocalíptica 3D', color: '#dc2626', secondary: '#f59e0b', eyeColor: '#fef08a', type: 'phoenix_boss', pattern: 'wave' }
+  ];
+
   const ACHIEVEMENTS = [
     { id: 'first_flight', icon: '🚀', title: 'Decolagem Inicial', desc: 'Passe por 5 obstáculos no total.', reward: 20, getVal: s => s.totalObstacles, target: 5 },
     { id: 'sharpshooter', icon: '🔮', title: 'Artilheiro de Energia', desc: 'Dispare 50 orbes de energia.', reward: 30, getVal: s => s.shotsFired, target: 50 },
+    { id: 'miniboss_hunter', icon: '👾', title: 'Caçador de Hordas', desc: 'Abata 15 Mini Bosses em combate.', reward: 65, getVal: s => s.miniBossesDefeated, target: 15 },
     { id: 'tower_breaker', icon: '🧱', title: 'Demolidor de Torres', desc: 'Quebre 5 torres usando seus tiros.', reward: 45, getVal: s => s.towersBroken, target: 5 },
     { id: 'roblox_slayer', icon: '👑', title: 'Caçador de Noob Gigante', desc: 'Derrote o 1º Chefe: Rei Noob Titã 3D.', reward: 80, getVal: s => s.robloxBossDefeated, target: 1 },
     { id: 'coin_collector', icon: '🪙', title: 'Magnata das Moedas', desc: 'Colete 150 moedas nas partidas.', reward: 60, getVal: s => s.totalCoinsCollected, target: 150 },
@@ -361,7 +400,7 @@
       weaponName: 'Bloxy Orb', shotDamage: 10, shotCount: 1, shotSpread: 0, shotCooldown: 0.34, shotSpeed: 640, shotRadius: 8, rateLabel: 'Normal', sizeLabel: 'Médio',
       orbColors: ['#ffffff', '#38bdf8', '#0284c7'],
       flameColors: ['#ffffff', '#ffea00', '#ff6a00', '#d92600'],
-      desc: '1x Moedas | Equilibrado. Dispara esferas de energia Bloxy únicas contra chefes e obstáculos.',
+      desc: '1x Moedas | Equilibrado. Dispara esferas de energia Bloxy únicas contra mini bosses, chefes e obstáculos.',
       type: 'noob' 
     },
     skibidi: { 
@@ -370,7 +409,7 @@
       weaponName: 'Disparo Duplo Sônico', shotDamage: 12, shotCount: 2, shotSpread: 0.06, shotCooldown: 0.25, shotSpeed: 740, shotRadius: 8, rateLabel: 'Rápida', sizeLabel: 'Médio',
       orbColors: ['#ffffff', '#00f7ff', '#0066ff'],
       flameColors: ['#ffffff', '#00f7ff', '#0088ff', '#0033aa'],
-      desc: '2x Moedas | Dispara 2 orbes sônicos paralelos em alta cadência.',
+      desc: '2x Moedas | Dispara 2 orbes sônicos paralelos em alta cadência para limpar esquadrões.',
       type: 'skibidi' 
     },
     shark: { 
@@ -493,7 +532,7 @@
     const t=$('toast');
     t.textContent=text;
     t.classList.add('show');
-    toastTimer=1.35;
+    toastTimer=1.5;
   }
 
   function addFloatingText(x, y, text, color='#ffea00', size=15){
@@ -504,8 +543,8 @@
       text,
       color,
       size,
-      life: 0.75,
-      max: 0.75
+      life: 0.78,
+      max: 0.78
     });
   }
 
@@ -531,15 +570,38 @@
     }
   }
 
+  function updateHordeHUD(){
+    if(state !== 'playing' || (miniBosses.length === 0 && !miniBossWave.active)){
+      hordeBadge.classList.add('hidden');
+      return;
+    }
+    const powerLevel = getMiniBossPowerLevel();
+    const totalAlive = miniBosses.length + (miniBossWave.active ? miniBossWave.toSpawn : 0);
+    hordeText.textContent = `ESQUADRÃO MINI BOSS LV.${powerLevel} · ${totalAlive} RESTANTES`;
+    hordeBadge.classList.remove('hidden');
+  }
+
   function reset(){
     score=0;coinsInRun=0;elapsed=0;worldX=0;spawnTimer=.5;
     obstacles=[];fireParticles=[];smokeParticles=[];burstParticles=[];
     playerProjectiles=[];bossProjectiles=[];floatingTexts=[];
     shake=0; skillCooldownTimer=0; shootCooldownTimer=0; destructionAnim=null;
     currentBoss=null; obstaclesPassedCount=0;
+    miniBosses=[];
+    miniBossWave = {
+      active: false,
+      toSpawn: 0,
+      spawnedInWave: 0,
+      spawnTimer: 0,
+      cooldownTimer: 3.5, // Primeira horda surge logo aos 3.5s
+      waveNumber: 0,
+      template: null,
+      formation: 'sine'
+    };
     plane.x=200;plane.y=255;plane.vy=0;plane.rot=0;plane.flap=0;plane.thrustBoost=0;plane.recoil=0;
     scoreEl.textContent='0';
     updateHUD();
+    updateHordeHUD();
   }
 
   function start(){
@@ -559,6 +621,7 @@
     saveData.stats.gamesPlayed++;
     checkAchievements();
     saveGame();
+    updateHordeHUD();
     burst(plane.x, plane.y, '#ff5500', 38);
     $('finalScore').textContent=score;
     $('finalGems').textContent=coinsInRun;
@@ -572,17 +635,117 @@
     else if(state==='paused'){state='playing';pauseScreen.classList.add('hidden');lastTime=performance.now();}
   }
 
+  // --- CÁLCULO DE ESCALA DE FORÇA DOS MINI BOSSES AO LONGO DO TEMPO ---
+  function getMiniBossPowerLevel(){
+    // Sobe 1 nível a cada 18 segundos de partida ou a cada 8 pontos
+    return 1 + Math.floor(elapsed / 18) + Math.floor(score / 10);
+  }
+
+  function startMiniBossWave(){
+    miniBossWave.waveNumber++;
+    miniBossWave.active = true;
+    // Quantidade: sempre entre 4 e 5 Mini Bosses por esquadrão!
+    miniBossWave.toSpawn = Math.random() < 0.5 ? 4 : 5;
+    miniBossWave.spawnedInWave = 0;
+    // Primeiro da fila entra imediatamente, e os próximos a cada 1.8s!
+    miniBossWave.spawnTimer = 0.05;
+    miniBossWave.template = BOSS_ROSTER[(miniBossWave.waveNumber - 1) % BOSS_ROSTER.length];
+    const formations = ['sine', 'echelon', 'hunter'];
+    miniBossWave.formation = formations[miniBossWave.waveNumber % formations.length];
+
+    const lv = getMiniBossPowerLevel();
+    showToast(`⚠️ HORDA DE ${miniBossWave.toSpawn} MINI BOSSES (${miniBossWave.template.shortName} LV.${lv})! +1 a cada 1,8s!`);
+    sound(310, 0.22, 'sawtooth', 0.065);
+  }
+
+  function spawnSingleMiniBoss(){
+    const lv = getMiniBossPowerLevel();
+    const indexInWave = miniBossWave.spawnedInWave;
+    miniBossWave.spawnedInWave++;
+    miniBossWave.toSpawn--;
+
+    // Usa o mesmo personagem do Boss atual da horda (ou alterna ocasionalmente em níveis altos)
+    const template = (lv >= 3 && Math.random() < 0.35)
+      ? BOSS_ROSTER[Math.floor(Math.random() * BOSS_ROSTER.length)]
+      : miniBossWave.template;
+
+    // Progressão de força com o tempo (HP, velocidade, frequência de tiro e recompensa)
+    const maxHp = Math.round(32 + (lv - 1) * 18);
+    const moveSpeed = Math.min(265, 138 + (lv - 1) * 14);
+    const shootInterval = Math.max(1.15, 2.35 - (lv - 1) * 0.14);
+    const bulletSpeed = Math.min(440, 285 + (lv - 1) * 18);
+    const scale = clamp(0.55 + (lv - 1) * 0.015, 0.55, 0.68);
+
+    // Distribuição vertical tática para os 4 a 5 Mini Bosses não ficarem sobrepostos
+    const laneSlots = [105, 185, 265, 345, 415];
+    const baseY = laneSlots[indexInWave % laneSlots.length];
+
+    miniBosses.push({
+      id: template.id,
+      shortName: template.shortName,
+      color: template.color,
+      secondary: template.secondary,
+      eyeColor: template.eyeColor,
+      type: template.type,
+      level: lv,
+      scale: scale,
+      x: W + 65,
+      y: baseY,
+      baseY: baseY,
+      vx: moveSpeed,
+      phase: indexInWave * 1.15,
+      formation: miniBossWave.formation,
+      hp: maxHp,
+      maxHp: maxHp,
+      hitFlash: 0,
+      shootTimer: 0.7 + indexInWave * 0.25,
+      shootInterval: shootInterval,
+      bulletSpeed: bulletSpeed,
+      scoreReward: 3 + Math.floor(lv / 2),
+      coinReward: 2 + Math.floor(lv / 2)
+    });
+
+    sound(250 + indexInWave * 35, 0.1, 'triangle', 0.045);
+
+    if(miniBossWave.toSpawn <= 0){
+      miniBossWave.active = false;
+      // Próxima onda de 4 a 5 Mini Bosses após intervalo (diminui levemente com o tempo)
+      miniBossWave.cooldownTimer = Math.max(6.5, 11.5 - lv * 0.45);
+    } else {
+      // Exatamente 1,8 segundos entre cada Mini Boss da horda!
+      miniBossWave.spawnTimer = 1.8;
+    }
+  }
+
+  function defeatMiniBoss(mb){
+    const skin = SKINS[activeSkin] || SKINS.noob;
+    const finalCoins = mb.coinReward * (skin.buff || 1);
+
+    burst(mb.x, mb.y, mb.secondary, 22);
+    burst(mb.x, mb.y, '#ff5500', 14);
+    sound(165, 0.22, 'sawtooth', 0.065);
+    shake = Math.max(shake, 10);
+
+    score += mb.scoreReward;
+    scoreEl.textContent = score;
+    best = Math.max(best, score);
+    coinsInRun += finalCoins;
+    totalCoins += finalCoins;
+
+    saveData.stats.miniBossesDefeated++;
+    saveData.stats.totalCoinsCollected += finalCoins;
+
+    updateHUD();
+    checkAchievements();
+    saveGame();
+
+    addFloatingText(mb.x, mb.y - 16, `+${mb.scoreReward} PTS · +${finalCoins} 🪙`, '#fde047', 14);
+  }
+
+  // --- BOSS PRINCIPAL ---
   function spawnBoss(){
     const bossIndex = Math.floor(obstaclesPassedCount / 12);
-    const bossRoster = [
-      { id: 'roblox_noob', name: 'Rei Noob Titã 3D (Roblox)', color: '#0284c7', secondary: '#facc15', eyeColor: '#ff0044', type: 'roblox_noob', pattern: 'aimed' },
-      { id: 'skibidi_king', name: 'Imperador Skibidi 3D', color: '#e2e8f0', secondary: '#0284c7', eyeColor: '#00f7ff', type: 'skibidi_boss', pattern: 'spread' },
-      { id: 'sigma_lord', name: 'Gigachad Supremo 3D', color: '#71717a', secondary: '#a855f7', eyeColor: '#e879f9', type: 'sigma_boss', pattern: 'wave' },
-      { id: 'dominus_admin', name: 'Admin Bacon Dominus 3D', color: '#1e293b', secondary: '#facc15', eyeColor: '#fde047', type: 'dominus_boss', pattern: 'spread' },
-      { id: 'cyber_shark', name: 'Tubarão Leviatã 3D', color: '#0077b6', secondary: '#00b4d8', eyeColor: '#80ffea', type: 'shark_boss', pattern: 'aimed' },
-      { id: 'solar_phoenix', name: 'Fênix Apocalíptica 3D', color: '#dc2626', secondary: '#f59e0b', eyeColor: '#fef08a', type: 'phoenix_boss', pattern: 'wave' }
-    ];
-    const template = bossRoster[(bossIndex - 1) % bossRoster.length];
+    const template = BOSS_ROSTER[(bossIndex - 1) % BOSS_ROSTER.length];
     const maxHp = 260 + (bossIndex - 1) * 145;
     
     currentBoss = {
@@ -604,7 +767,7 @@
       shootInterval: Math.max(0.85, 1.32 - (bossIndex - 1) * 0.07),
       state: 'entering'
     };
-    showToast(`🚨 CHEFE SURGIU: ${currentBoss.name} (${maxHp} HP)! Atire (F)!`);
+    showToast(`🚨 CHEFE GIGANTE SURGIU: ${currentBoss.name} (${maxHp} HP)! Atire (F)!`);
     sound(140, .45, 'sawtooth', 0.09);
   }
 
@@ -722,6 +885,21 @@
 
     bossProjectiles.forEach(bp => burst(bp.x, bp.y, '#ff0055', 8));
     bossProjectiles = [];
+
+    // Dano em área nos Mini Bosses dentro do alcance
+    for(let i = miniBosses.length - 1; i >= 0; i--){
+      const mb = miniBosses[i];
+      const distMb = Math.hypot(mb.x - plane.x, mb.y - plane.y);
+      if(distMb <= skin.range + 90){
+        mb.hp -= skin.skillDamage;
+        mb.hitFlash = 0.25;
+        addFloatingText(mb.x, mb.y - 20, `-${skin.skillDamage}`, '#ff4d4d', 15);
+        if(mb.hp <= 0){
+          defeatMiniBoss(mb);
+          miniBosses.splice(i, 1);
+        }
+      }
+    }
 
     if(currentBoss){
       let distBoss = Math.hypot(currentBoss.x - plane.x, currentBoss.y - plane.y);
@@ -890,8 +1068,8 @@
 
       box.innerHTML = `
         <div class="save-info">
-          <b>💾 Salvamento Automático GitHub Pages Ativo:</b><br>
-          Todo o seu progresso (<b>🪙 ${totalCoins} moedas</b>, recorde <b>${best} pts</b>, <b>${ownedSkins.length} personagens</b>, <b>${ownedMaps.length} mapas</b> e <b>${saveData.unlockedAchievements.length} conquistas</b>) é salvo automaticamente no navegador.<br>
+          <b>💾 Salvamento Automático Ativo:</b><br>
+          Todo o seu progresso (<b>🪙 ${totalCoins} moedas</b>, recorde <b>${best} pts</b>, <b>${saveData.stats.miniBossesDefeated} Mini Bosses</b> abatidos, <b>${ownedSkins.length} personagens</b> e <b>${saveData.unlockedAchievements.length} conquistas</b>) é salvo automaticamente no navegador.<br>
           Use o código abaixo para fazer backup ou transferir seu progresso:
         </div>
         <input class="save-input" id="backupCodeInput" type="text" value="${encodedSave}" aria-label="Código de Backup do Progresso">
@@ -1072,6 +1250,73 @@
     floatingTexts = floatingTexts.filter(ft => ft.life > 0);
   }
 
+  function updateMiniBosses(dt){
+    // Controle de onda / esquadrão de 4 a 5 Mini Bosses a cada 1,8s
+    if(!miniBossWave.active){
+      // Inicia nova onda quando não houver um Boss gigante bloqueando toda a tela (ou se já passou tempo suficiente)
+      if(!currentBoss && miniBosses.length === 0){
+        miniBossWave.cooldownTimer -= dt;
+        if(miniBossWave.cooldownTimer <= 0){
+          startMiniBossWave();
+        }
+      }
+    } else {
+      miniBossWave.spawnTimer -= dt;
+      if(miniBossWave.spawnTimer <= 0 && miniBossWave.toSpawn > 0){
+        spawnSingleMiniBoss();
+      }
+    }
+
+    // Atualização individual de cada Mini Boss ativo
+    for(let i = miniBosses.length - 1; i >= 0; i--){
+      const mb = miniBosses[i];
+      mb.hitFlash = Math.max(0, mb.hitFlash - dt * 4.5);
+      mb.x -= mb.vx * dt;
+
+      if(mb.formation === 'hunter'){
+        // Perseguição vertical suave em direção à altitude do jogador
+        const desiredY = clamp(plane.y + Math.sin(elapsed * 3.5 + mb.phase) * 48, 70, H - 80);
+        mb.y += (desiredY - mb.y) * 2.1 * dt;
+      } else if(mb.formation === 'echelon'){
+        mb.y = clamp(mb.baseY + Math.cos(elapsed * 2.6 + mb.phase) * 34, 70, H - 80);
+      } else {
+        mb.y = clamp(mb.baseY + Math.sin(elapsed * 3.2 + mb.phase) * 45, 70, H - 80);
+      }
+
+      // Disparo do Mini Boss enquanto estiver na frente do jogador
+      if(mb.x > plane.x + 80 && mb.x < W - 20){
+        mb.shootTimer -= dt;
+        if(mb.shootTimer <= 0){
+          mb.shootTimer = mb.shootInterval;
+          const ang = Math.atan2(plane.y - mb.y, plane.x - mb.x);
+          bossProjectiles.push({
+            x: mb.x - 26 * mb.scale,
+            y: mb.y,
+            vx: Math.cos(ang) * mb.bulletSpeed,
+            vy: Math.sin(ang) * mb.bulletSpeed,
+            r: 7,
+            color: mb.eyeColor
+          });
+          sound(390, 0.06, 'square', 0.025);
+        }
+      }
+
+      // Colisão física direta com a nave do jogador
+      const hitDist = 22 + 36 * mb.scale;
+      if(Math.hypot(plane.x - mb.x, plane.y - mb.y) < hitDist){
+        gameOver();
+        return;
+      }
+
+      // Saiu pela esquerda da tela
+      if(mb.x < -75){
+        miniBosses.splice(i, 1);
+      }
+    }
+
+    updateHordeHUD();
+  }
+
   function update(dt){
     if(state!=='playing')return;
     elapsed += dt;
@@ -1125,6 +1370,9 @@
       if(p.y < 0) p.y = H;
       if(p.y > H - 40) p.y = 0;
     });
+
+    // Atualiza esquadrão de Mini Bosses
+    updateMiniBosses(dt);
 
     if(currentBoss){
       currentBoss.hitFlash = Math.max(0, currentBoss.hitFlash - dt * 4);
@@ -1189,11 +1437,13 @@
       }
     }
 
+    // Colisão dos projéteis do jogador
     playerProjectiles.forEach(pp => {
       pp.x += pp.vx * dt;
       pp.y += pp.vy * dt;
       pp.life -= dt;
 
+      // 1. Acerto no Boss Principal
       if(currentBoss && pp.life > 0){
         if(Math.hypot(pp.x - currentBoss.x, pp.y - currentBoss.y) < 46 + pp.r){
           pp.life = 0;
@@ -1209,6 +1459,28 @@
         }
       }
 
+      // 2. Acerto nos Mini Bosses
+      if(pp.life > 0){
+        for(let i = miniBosses.length - 1; i >= 0; i--){
+          const mb = miniBosses[i];
+          if(Math.hypot(pp.x - mb.x, pp.y - mb.y) < (44 * mb.scale) + pp.r){
+            pp.life = 0;
+            mb.hp -= pp.damage;
+            mb.hitFlash = 0.2;
+            burst(pp.x, pp.y, pp.colors[1], 7);
+            addFloatingText(mb.x - 14, mb.y - 16, `-${pp.damage}`, '#fde047', 13);
+            sound(460, 0.055, 'sine', 0.038);
+
+            if(mb.hp <= 0){
+              defeatMiniBoss(mb);
+              miniBosses.splice(i, 1);
+            }
+            break;
+          }
+        }
+      }
+
+      // 3. Interceptação de projéteis inimigos
       if(pp.life > 0){
         bossProjectiles.forEach(bp => {
           if(bp.r > 0 && Math.hypot(pp.x - bp.x, pp.y - bp.y) < pp.r + bp.r + 4){
@@ -1221,6 +1493,7 @@
         });
       }
 
+      // 4. Quebra de Torres / Obstáculos
       if(pp.life > 0){
         obstacles.forEach(o => {
           if(pp.life <= 0) return;
@@ -1616,17 +1889,11 @@
     });
   }
 
-  function drawBoss(){
-    if(!currentBoss) return;
-    ctx.save();
-    ctx.translate(currentBoss.x, currentBoss.y);
+  // --- RENDERIZAÇÃO 3D COMPARTILHADA ENTRE BOSS E MINI BOSSES ---
+  function drawBossEntityModel(entity){
+    if(entity.hitFlash > 0) ctx.filter = 'brightness(1.85)';
 
-    ctx.fillStyle = 'rgba(0,0,0,0.48)';
-    ctx.beginPath(); ctx.ellipse(0, 62, 58, 16, 0, 0, Math.PI*2); ctx.fill();
-
-    if(currentBoss.hitFlash > 0) ctx.filter = 'brightness(1.8)';
-
-    if(currentBoss.type === 'roblox_noob'){
+    if(entity.type === 'roblox_noob'){
       ctx.fillStyle = '#3f6212'; ctx.fillRect(-16, 26, 18, 28);
       ctx.fillStyle = '#65a30d'; ctx.fillRect(4, 26, 18, 28);
       ctx.fillStyle = '#0369a1'; ctx.fillRect(-26, -12, 52, 40);
@@ -1652,23 +1919,142 @@
 
       ctx.strokeStyle = '#111827'; ctx.lineWidth = 3.5;
       ctx.beginPath(); ctx.arc(-4, -24, 9, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
+
+    } else if(entity.type === 'skibidi_boss'){
+      // Base de porcelana 3D
+      ctx.fillStyle = '#cbd5e1';
+      ctx.beginPath(); ctx.roundRect(-26, 6, 52, 34, 10); ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath(); ctx.ellipse(0, 8, 30, 11, 0, 0, Math.PI * 2); ctx.fill();
+      // Tanque traseiro
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(16, -28, 18, 38);
+      // Canhão frontal
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(-56, -4, 32, 14);
+      // Cabeça 3D emergindo
+      let headGrad = ctx.createRadialGradient(-6, -26, 4, -4, -24, 24);
+      headGrad.addColorStop(0, '#fed7aa'); headGrad.addColorStop(1, '#c2410c');
+      ctx.fillStyle = headGrad;
+      ctx.beginPath(); ctx.arc(-4, -24, 21, 0, Math.PI * 2); ctx.fill();
+      // Olhos brilhantes cyan
+      ctx.fillStyle = '#00f7ff'; ctx.shadowColor = '#00f7ff'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(-13, -27, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2, -27, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+    } else if(entity.type === 'sigma_boss'){
+      // Monólito Gigachad 3D
+      let stoneGrad = ctx.createLinearGradient(-28, -52, 28, 46);
+      stoneGrad.addColorStop(0, '#a1a1aa'); stoneGrad.addColorStop(0.5, '#52525b'); stoneGrad.addColorStop(1, '#18181b');
+      ctx.fillStyle = stoneGrad;
+      ctx.beginPath();
+      ctx.moveTo(-24, -48); ctx.lineTo(24, -44); ctx.lineTo(30, 12); ctx.lineTo(14, 46); ctx.lineTo(-28, 38); ctx.lineTo(-34, -8);
+      ctx.closePath(); ctx.fill();
+      // Queixo esculpido & aura roxa
+      ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.fillStyle = '#e879f9'; ctx.shadowColor = '#e879f9'; ctx.shadowBlur = 14;
+      ctx.fillRect(-20, -24, 12, 5);
+      ctx.fillRect(-4, -24, 10, 5);
+      ctx.shadowBlur = 0;
+
+    } else if(entity.type === 'dominus_boss'){
+      // Capuz escuro Dominus + Chifres Dourados 3D
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.moveTo(0, -54); ctx.lineTo(38, 36); ctx.lineTo(-38, 36); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.stroke();
+      // Chifres laterais
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath(); ctx.moveTo(-22, -26); ctx.lineTo(-48, -52); ctx.lineTo(-14, -40); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(22, -26); ctx.lineTo(48, -52); ctx.lineTo(14, -40); ctx.closePath(); ctx.fill();
+      // Vazio facial com olhos dourados
+      ctx.fillStyle = '#020617';
+      ctx.beginPath(); ctx.arc(0, -6, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fde047'; ctx.shadowColor = '#fde047'; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.arc(-8, -8, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5, -8, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+    } else if(entity.type === 'shark_boss'){
+      // Tubarão Mecânico 3D
+      let sharkGrad = ctx.createLinearGradient(0, -34, 0, 34);
+      sharkGrad.addColorStop(0, '#0284c7'); sharkGrad.addColorStop(0.6, '#0369a1'); sharkGrad.addColorStop(1, '#e0f2fe');
+      ctx.fillStyle = sharkGrad;
+      ctx.beginPath();
+      ctx.moveTo(-56, 0); ctx.quadraticCurveTo(-18, -36, 44, -14); ctx.lineTo(60, -30); ctx.lineTo(48, 0); ctx.lineTo(60, 30); ctx.lineTo(44, 14); ctx.quadraticCurveTo(-18, 36, -56, 0);
+      ctx.closePath(); ctx.fill();
+      // Barbatana dorsal
+      ctx.fillStyle = '#075985';
+      ctx.beginPath(); ctx.moveTo(-6, -24); ctx.lineTo(12, -52); ctx.lineTo(20, -20); ctx.closePath(); ctx.fill();
+      // Olho cibernético
+      ctx.fillStyle = '#80ffea'; ctx.shadowColor = '#80ffea'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(-28, -7, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
     } else {
+      // Fênix Solar 3D / Padrão
       let bossGrad = ctx.createRadialGradient(-14, -14, 6, 0, 0, 52);
-      bossGrad.addColorStop(0, '#ffffff'); bossGrad.addColorStop(0.45, currentBoss.color); bossGrad.addColorStop(1, '#14050a');
-      ctx.fillStyle = bossGrad; ctx.beginPath(); ctx.arc(0, 0, 50, 0, Math.PI*2); ctx.fill();
+      bossGrad.addColorStop(0, '#ffffff'); bossGrad.addColorStop(0.45, entity.color); bossGrad.addColorStop(1, '#14050a');
+      ctx.fillStyle = bossGrad; ctx.beginPath(); ctx.arc(0, 0, 48, 0, Math.PI*2); ctx.fill();
 
-      ctx.fillStyle = currentBoss.secondary;
-      ctx.beginPath(); ctx.moveTo(-10, -44); ctx.lineTo(-36, -68); ctx.lineTo(12, -46); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(-10, 44); ctx.lineTo(-36, 68); ctx.lineTo(12, 46); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = entity.secondary;
+      ctx.beginPath(); ctx.moveTo(-10, -42); ctx.lineTo(-36, -68); ctx.lineTo(14, -44); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-10, 42); ctx.lineTo(-36, 68); ctx.lineTo(14, 44); ctx.closePath(); ctx.fill();
 
-      ctx.fillStyle = '#111827'; ctx.fillRect(-64, -15, 34, 30);
-      ctx.fillStyle = currentBoss.eyeColor; ctx.shadowColor = currentBoss.eyeColor; ctx.shadowBlur = 18;
-      ctx.beginPath(); ctx.arc(-6, -4, 16, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#ff0033'; ctx.beginPath(); ctx.arc(-8, -4, 7.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#111827'; ctx.fillRect(-60, -14, 32, 28);
+      ctx.fillStyle = entity.eyeColor; ctx.shadowColor = entity.eyeColor; ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.arc(-6, -4, 15, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ff0033'; ctx.beginPath(); ctx.arc(-8, -4, 7, 0, Math.PI*2); ctx.fill();
       ctx.shadowBlur = 0;
     }
 
     ctx.filter = 'none';
+  }
+
+  function drawMiniBosses(){
+    miniBosses.forEach(mb => {
+      ctx.save();
+      ctx.translate(mb.x, mb.y);
+
+      // Sombra projetada
+      ctx.fillStyle = 'rgba(0,0,0,0.34)';
+      ctx.beginPath(); ctx.ellipse(0, 38 * mb.scale, 34 * mb.scale, 9 * mb.scale, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Desenha o mesmo personagem 3D do Boss em escala reduzida
+      ctx.save();
+      ctx.scale(mb.scale, mb.scale);
+      drawBossEntityModel(mb);
+      ctx.restore();
+
+      // Tag de Nível (LV.X) + Mini Barra de Vida acima do Mini Boss
+      const barW = 54, barH = 6;
+      const topY = -48 * mb.scale;
+      const hpRatio = clamp(mb.hp / mb.maxHp, 0, 1);
+
+      ctx.font = '900 9px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(`LV.${mb.level} ${mb.shortName.toUpperCase()}`, 0, topY - 4);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.82)';
+      ctx.fillRect(-barW / 2, topY, barW, barH);
+      ctx.fillStyle = hpRatio > 0.45 ? '#f97316' : '#ef4444';
+      ctx.fillRect(-barW / 2 + 1, topY + 1, (barW - 2) * hpRatio, barH - 2);
+
+      ctx.restore();
+    });
+  }
+
+  function drawBoss(){
+    if(!currentBoss) return;
+    ctx.save();
+    ctx.translate(currentBoss.x, currentBoss.y);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.48)';
+    ctx.beginPath(); ctx.ellipse(0, 62, 58, 16, 0, 0, Math.PI*2); ctx.fill();
+
+    drawBossEntityModel(currentBoss);
 
     const hpRatio = clamp(currentBoss.hp / currentBoss.maxHp, 0, 1);
     ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(-48, -82, 96, 10);
@@ -1676,15 +2062,6 @@
     ctx.fillRect(-47, -81, 94 * hpRatio, 8);
 
     ctx.restore();
-
-    bossProjectiles.forEach(bp => {
-      const pColor = bp.color || '#ff0055';
-      ctx.save();
-      ctx.shadowColor = pColor; ctx.shadowBlur = 15;
-      ctx.fillStyle = pColor; ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.r, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.r * 0.45, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-    });
 
     ctx.save();
     const barW = 370, barH = 16, bx = (W - barW) / 2, by = 68;
@@ -1702,6 +2079,17 @@
     hpGrad.addColorStop(0, '#ff1e56'); hpGrad.addColorStop(1, '#ffac41');
     ctx.fillStyle = hpGrad; ctx.beginPath(); ctx.roundRect(bx, by, barW * hpPct, barH, 8); ctx.fill();
     ctx.restore();
+  }
+
+  function drawEnemyProjectiles(){
+    bossProjectiles.forEach(bp => {
+      const pColor = bp.color || '#ff0055';
+      ctx.save();
+      ctx.shadowColor = pColor; ctx.shadowBlur = 15;
+      ctx.fillStyle = pColor; ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.r, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bp.x, bp.y, bp.r * 0.45, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
   }
 
   function drawAttachedRocketFlame(skin){
@@ -1745,10 +2133,44 @@
       ctx.beginPath(); ctx.arc(34, -5, 2, 0, Math.PI * 2); ctx.fill();
       ctx.lineWidth = 2; ctx.strokeStyle = '#111827';
       ctx.beginPath(); ctx.arc(31.5, 1, 4.2, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+
+    } else if(skin.type === 'skibidi'){
+      ctx.fillStyle = '#cbd5e1'; ctx.beginPath(); ctx.roundRect(-24, -13, 42, 26, 8); ctx.fill();
+      ctx.fillStyle = '#0284c7'; ctx.fillRect(-10, -16, 26, 7);
+      let headGrad = ctx.createRadialGradient(22, -2, 3, 22, -2, 14);
+      headGrad.addColorStop(0, '#fed7aa'); headGrad.addColorStop(1, '#c2410c');
+      ctx.fillStyle = headGrad; ctx.beginPath(); ctx.arc(22, -2, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#00f7ff'; ctx.beginPath(); ctx.arc(28, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    } else if(skin.type === 'shark'){
+      let sGrad = ctx.createLinearGradient(-30, -14, 38, 14);
+      sGrad.addColorStop(0, '#0369a1'); sGrad.addColorStop(0.6, '#0284c7'); sGrad.addColorStop(1, '#e0f2fe');
+      ctx.fillStyle = sGrad;
+      ctx.beginPath(); ctx.moveTo(-32, 0); ctx.quadraticCurveTo(-6, -18, 40, 0); ctx.quadraticCurveTo(-6, 18, -32, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#075985'; ctx.beginPath(); ctx.moveTo(-4, -12); ctx.lineTo(6, -24); ctx.lineTo(14, -10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#80ffea'; ctx.beginPath(); ctx.arc(22, -4, 3, 0, Math.PI * 2); ctx.fill();
+
+    } else if(skin.type === 'sigma'){
+      let gGrad = ctx.createLinearGradient(-28, -14, 36, 14);
+      gGrad.addColorStop(0, '#3f3f46'); gGrad.addColorStop(0.5, '#71717a'); gGrad.addColorStop(1, '#d4d4d8');
+      ctx.fillStyle = gGrad;
+      ctx.beginPath(); ctx.moveTo(-28, -12); ctx.lineTo(28, -15); ctx.lineTo(40, 0); ctx.lineTo(24, 15); ctx.lineTo(-28, 12); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#e879f9'; ctx.fillRect(18, -7, 10, 3.5);
+
+    } else if(skin.type === 'dominus'){
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.moveTo(-30, -14); ctx.lineTo(38, 0); ctx.lineTo(-30, 14); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath(); ctx.moveTo(4, -10); ctx.lineTo(-8, -24); ctx.lineTo(16, -8); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(4, 10); ctx.lineTo(-8, 24); ctx.lineTo(16, 8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(20, -3, 3.5, 0, Math.PI * 2); ctx.fill();
+
     } else {
       let phoenixGrad = ctx.createLinearGradient(-30, 0, 35, 0);
       phoenixGrad.addColorStop(0, '#ff4500'); phoenixGrad.addColorStop(0.5, '#ffcc00'); phoenixGrad.addColorStop(1, '#ffffff');
-      ctx.fillStyle = phoenixGrad; ctx.beginPath(); ctx.moveTo(-32, -4); ctx.lineTo(-15, -11); ctx.lineTo(30, -4); ctx.lineTo(45, 0); ctx.lineTo(30, 4); ctx.lineTo(-15, 11); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = phoenixGrad; ctx.beginPath(); ctx.moveTo(-32, -4); ctx.lineTo(-15, -13); ctx.lineTo(30, -5); ctx.lineTo(46, 0); ctx.lineTo(30, 5); ctx.lineTo(-15, 13); ctx.closePath(); ctx.fill();
     }
 
     ctx.restore();
@@ -1770,7 +2192,9 @@
     });
 
     drawPlayerProjectiles();
+    drawMiniBosses();
     drawBoss();
+    drawEnemyProjectiles();
 
     if(destructionAnim){
       ctx.save();
@@ -1836,7 +2260,7 @@
     requestAnimationFrame(loop);
   }
 
-  // --- VINCULAÇÃO ROBUSTA DOS BOTÕES DO MENU E HUD ---
+  // --- VINCULAÇÃO DOS BOTÕES DO MENU E HUD ---
   const startBtn = $('startBtn');
   const shopBtnStart = $('shopBtnStart');
   const shopBtnOver = $('shopBtnOver');
@@ -1848,36 +2272,16 @@
   const pauseBtn = $('pauseBtn');
   const closeShopBtn = $('closeShopBtn');
 
-  if(startBtn){
-    startBtn.onclick = (e) => { e.preventDefault(); start(); };
-  }
-  if(shopBtnStart){
-    shopBtnStart.onclick = (e) => { e.preventDefault(); openShop('skins'); };
-  }
-  if(shopBtnOver){
-    shopBtnOver.onclick = (e) => { e.preventDefault(); openShop('skins'); };
-  }
-  if(achBtnStart){
-    achBtnStart.onclick = (e) => { e.preventDefault(); openShop('ach'); };
-  }
-  if(achBtnOver){
-    achBtnOver.onclick = (e) => { e.preventDefault(); openShop('ach'); };
-  }
-  if(achHudBtn){
-    achHudBtn.onclick = (e) => { e.preventDefault(); if(state==='playing') pause(); openShop('ach'); };
-  }
-  if(retryBtn){
-    retryBtn.onclick = (e) => { e.preventDefault(); start(); };
-  }
-  if(resumeBtn){
-    resumeBtn.onclick = (e) => { e.preventDefault(); pause(); };
-  }
-  if(pauseBtn){
-    pauseBtn.onclick = (e) => { e.preventDefault(); if(state==='playing'||state==='paused') pause(); };
-  }
-  if(closeShopBtn){
-    closeShopBtn.onclick = (e) => { e.preventDefault(); shopScreen.classList.add('hidden'); };
-  }
+  if(startBtn) startBtn.onclick = (e) => { e.preventDefault(); start(); };
+  if(shopBtnStart) shopBtnStart.onclick = (e) => { e.preventDefault(); openShop('skins'); };
+  if(shopBtnOver) shopBtnOver.onclick = (e) => { e.preventDefault(); openShop('skins'); };
+  if(achBtnStart) achBtnStart.onclick = (e) => { e.preventDefault(); openShop('ach'); };
+  if(achBtnOver) achBtnOver.onclick = (e) => { e.preventDefault(); openShop('ach'); };
+  if(achHudBtn) achHudBtn.onclick = (e) => { e.preventDefault(); if(state==='playing') pause(); openShop('ach'); };
+  if(retryBtn) retryBtn.onclick = (e) => { e.preventDefault(); start(); };
+  if(resumeBtn) resumeBtn.onclick = (e) => { e.preventDefault(); pause(); };
+  if(pauseBtn) pauseBtn.onclick = (e) => { e.preventDefault(); if(state==='playing'||state==='paused') pause(); };
+  if(closeShopBtn) closeShopBtn.onclick = (e) => { e.preventDefault(); shopScreen.classList.add('hidden'); };
 
   skillHud.onclick = () => triggerDestructionSkill();
   fireHud.onclick = () => shootPlayerOrbs();
